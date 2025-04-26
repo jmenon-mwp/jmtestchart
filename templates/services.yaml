@@ -1,0 +1,36 @@
+{{- range .Values.services }}
+  {{- if not .name }}
+    {{- fail "ERROR: Service definition in 'services' list is missing required field 'name'." }}
+  {{- end }}
+  {{- if not .port }}
+    {{- fail (printf "ERROR: Service '%s' definition is missing required field 'port'." .name) }}
+  {{- end }}
+  {{- if not .selector }}
+    {{- fail (printf "ERROR: Service '%s' definition is missing required field 'selector'." .name) }}
+  {{- end }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .name }}
+  labels:
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    helm.sh/chart: {{ printf "%s-%s" $.Chart.Name $.Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
+spec:
+  type: {{ default "ClusterIP" .type }}
+  ports:
+    - port: {{ .port }}
+      targetPort: {{ default .port .targetPort }}
+      protocol: {{ default "TCP" .protocol }}
+      {{- if .portName }}
+      name: {{ .portName }}
+      {{- end }}
+      {{- if (and (eq (default "ClusterIP" .type) "NodePort") .nodePort) }}
+      nodePort: {{ .nodePort }}
+      {{- end }}
+  selector:
+    {{- toYaml .selector | nindent 4 }}
+
+{{- end }}

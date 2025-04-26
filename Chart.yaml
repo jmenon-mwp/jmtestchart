@@ -1,0 +1,10 @@
+apiVersion: v2
+name: jmtestchart
+description: A basic Helm chart 
+
+# Type indicates this chart is deployable
+type: application
+
+# Version of this chart
+version: 0.1.0
+

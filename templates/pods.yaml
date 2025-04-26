@@ -1,0 +1,25 @@
+{{- range .Values.pods }}
+--- 
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ .name }}
+  labels:
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    helm.sh/chart: {{ printf "%s-%s" $.Chart.Name $.Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
+    pod-spec-name: {{ .name }}
+spec:
+  containers:
+    - name: {{ .containerName }}
+      image: {{ .image }}
+      imagePullPolicy: IfNotPresent
+      {{- if .command }}
+      command:
+        {{- toYaml .command | nindent 8 }}
+      {{- end }}
+      {{- if .containerPort }}
+      ports:
+        - containerPort: {{ .containerPort }}
+      {{- end }}
+{{- end }}
